@@ -20,7 +20,7 @@ class Support extends Model
 
     public function help()
     {
-        return $this->belongsTo('App\Event');
+        return $this->hasOne('App\Help');
     }
 
     public function organization()

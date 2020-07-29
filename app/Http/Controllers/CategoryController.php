@@ -23,6 +23,14 @@ class CategoryController extends Controller
         return response()->json($beneficiaries);
     }
 
+    // Obtener donde se obtuvo la info
+    public function getInformation()
+    {
+        $beneficiaries = Category::select('id as key','name as label')->where('upper',80)->get();
+
+        return response()->json($beneficiaries);
+    }
+
     // Obtener tipos de Support
     public function getSupport()
     {

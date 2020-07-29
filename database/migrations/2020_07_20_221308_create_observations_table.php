@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDatesTable extends Migration
+class CreateObservationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,12 @@ class CreateDatesTable extends Migration
      */
     public function up()
     {
-        Schema::create('dates', function (Blueprint $table) {
+        Schema::create('observations', function (Blueprint $table) {
             $table->id();
-            $table->integer("event_id");
-            $table->dateTime("start")->nullable();
-            $table->dateTime("end")->nullable();
+            $table->integer("user_id")->nullable();
+            $table->text("notes")->nullable();
+            $table->integer("collaborator_id")->nullable();
+            $table->string('information_id')->nullable(); // Categoria con donde se obtuvo la info
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ class CreateDatesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('dates');
+        Schema::dropIfExists('observations');
     }
 }

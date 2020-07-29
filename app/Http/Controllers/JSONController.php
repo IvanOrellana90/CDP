@@ -28,4 +28,17 @@ class JSONController extends Controller
         return $data;
 
     }
+
+    public function organizationNames()
+    {
+        $organizations = Organization::select('name')->get();
+
+        $organizationNames = array();
+
+        foreach ($organizations as $organization) {
+            array_push($organizationNames, $organization->name);
+        }
+
+        return $organizationNames;
+    }
 }

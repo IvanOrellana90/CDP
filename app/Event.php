@@ -11,6 +11,11 @@ class Event extends Model
         return $this->belongsTo('App\Support');
     }
 
+    public function organizations()
+    {
+        return $this->belongsToMany('App\Organization');
+    }
+
     public function contact()
     {
         return $this->belongsTo('App\Contact');

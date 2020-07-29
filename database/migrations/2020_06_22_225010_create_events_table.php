@@ -17,6 +17,8 @@ class CreateEventsTable extends Migration
             $table->id();
             $table->string("name");
             $table->text("description")->nullable();
+            $table->integer("type");
+            $table->integer("points")->default(0);
             $table->integer("support_id");
             $table->integer("direction_id");
             $table->integer("contact_id");

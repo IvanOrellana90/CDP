@@ -64,10 +64,10 @@
                                         <span class="vs-divider-border before vs-divider-border-primary" style="width: 100%; border-top-width: 1px; border-top-style: solid;"></span>
                                     </div>
                                     <div class="vx-row">
-                                      <div class="vx-col md:w-1/2 w-full mt-5">
-                                          <label class="vs-input--label">Días de la semana</label>
-                                          <v-select multiple :closeOnSelect="false" :options="daysEventOptions" v-model="daysEvent" class="w-full select-large" name="days_event" v-validate="'required'" ></v-select>
-                                          <small class="text-danger">{{ errors.first('step-1.days_event') }}</small>
+                                      <div class="vx-col w-full mt-5">
+                                          <label class="vs-input--label">Días de la semana en los que se realiza la actividad</label>
+                                          <v-select multiple :closeOnSelect="false" :options="daysEventOptions" v-model="daysEvent" class="w-full select-large" name="days_event" ></v-select>
+                                          <small v-if="!daysEvent.length" class="text-primary">Puedes elegir el o los días en que la actividad sucede.</small>
                                       </div>
                                     </div>
                                     <transition name="fade">
@@ -80,10 +80,11 @@
                                                     </span>
                                                     <span class="vs-divider-border before vs-divider-border-primary" style="width: 100%; border-top-width: 1px; border-top-style: solid;"></span>
                                                 </div>
-                                                <div v-for=" item in daysEvent" v-bind:key="item" class="vx-col md:w-1/2 w-full mt-5">
-                                                    <label class="vs-input--label">Horarios día {{ item.label }}</label>
-                                                    <v-select multiple :closeOnSelect="false" :options="arrayHours" v-model="eventHour[item.key]" class="w-full select-large" name="hour_event" v-validate="'required'" ></v-select>
+                                                <div v-for=" item in daysEvent" v-bind:key="item" class="vx-col w-full mt-5">
+                                                    <label class="vs-input--label">Hora de inicio para las actividades del día <strong>{{ item.label }}</strong></label>
+                                                    <v-select multiple :closeOnSelect="false" :options="arrayHours" v-model="eventHour[item.key]" class="w-full select-large" name="hour_event" ></v-select>
                                                     <small class="text-danger">{{ errors.first('step-1.hour_event') }}</small>
+                                                    <small class="text-primary">Respecto de cada día, señala el horario en que se realiza. Puedes elegir más de un horario si por ejemplo, la Olla Común ofrece diferentes comidas. </small>
                                                 </div>
                                             </div>
                                         </div>
@@ -94,18 +95,77 @@
                     </tab-content>
 
                     <!-- tab 2 content -->
-                    <tab-content title="Dirección" class="mb-5" icon="feather icon-map" :before-change="validateStep2">
+                    <tab-content title="Apoyo o servicio" class="mb-5" icon="feather icon-info" :before-change="validateStep2">
                         <form data-vv-scope="step-2">
                             <div class="vx-row">
-                                <div class="vx-col md:w-1/2 w-full mt-5">
-                                    <label class="vs-input--label">Región</label>
-                                    <v-select :reduce="label => label.key" :options="regionesOptions" v-model="eventDirectionRegion" class="w-full select-large" name="event_region" v-validate="'required'" ></v-select>
-                                    <small class="text-danger">{{ errors.first('step-2.event_region') }}</small>
+                                <div class="vx-col w-full mt-5">
+                                    <label class="vs-input--label">Tipo de apoyo o servicio</label>
+                                    <v-select :reduce="label => label.key" multiple :closeOnSelect="false" :options="supportTypeOptions" v-model="supportType" class="w-full select-large" name="support_type" v-validate="'required'"/>
+                                    <small class="text-danger">{{ errors.first('step-2.support_type') }}</small>
+                                    <small v-if="!supportType.length && !errors.first('step-2.support_type')" class="text-primary">¿Qué tipo de ayuda o servicio brinda la actividad o la organización?</small>
                                 </div>
                                 <div class="vx-col md:w-1/2 w-full mt-5">
+                                    <label class="vs-input--label">Beneficiarios</label>
+                                    <v-select :reduce="label => label.key" multiple :closeOnSelect="false" :options="supportBeneficiariesOptions" v-model="supportBeneficiaries" class="w-full select-large" name="support_beneficiaries" v-validate="'required'"/>
+                                    <small class="text-danger">{{ errors.first('step-2.support_beneficiaries') }}</small>
+                                    <small v-if="!supportBeneficiaries.length && !errors.first('step-2.support_beneficiaries')" class="text-primary">¿A quiénes busca asistir/apoyar la actividad u organización?</small>
+                                </div>
+                                <div class="vx-col md:w-1/2 w-full mt-5">
+                                <vs-input @focus="supportBeneficiariesNumberDetail = true" @blur="supportBeneficiariesNumberDetail = false" type="number" label="Nº de personas a las que apoya la institución"  v-model="supportBeneficiariesNumber" class="w-full" />
+                                <small v-if="supportBeneficiariesNumberDetail" class="text-primary">¿Aproximadamente a cuántas personas ayuda? (por ejemplo ¿cuántas raciones diarias entrega la olla común o comedor solidario?)</small>
+                                </div>
+                                <div class="vx-col w-full mt-5">
+                                    <label class="vs-input--label">Descripción del apoyo o servicio que realiza</label>
+                                    <vs-textarea label="Hablanos un poco del más del servicio" style="margin-bottom: 0px;" v-model="supportDescription" />
+                                </div>
+                                <div class="vx-col md:w-1/2 w-full">
+                                    <div class="demo-alignment">
+                                        <span>¿Necesita o recibe donaciones o voluntariado?</span>
+                                        <div class="flex">
+                                        <vs-checkbox v-model="showNeedHelp"></vs-checkbox>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <transition name="fade">
+                                <div v-if="showNeedHelp">
+                                    <div class="vs-component vs-divider mt-10">
+                                        <span class="vs-divider-border after vs-divider-border-primary" style="width: 100%; border-top-width: 1px; border-top-style: solid;"></span>
+                                        <span class="vs-divider--text vs-divider-text-primary vs-divider-background-default" style="background: transparent;">
+                                            <i class="vs-icon notranslate icon-scale icon-divider notranslate vs-divider--icon feather icon-home null"></i>
+                                        </span>
+                                        <span class="vs-divider-border before vs-divider-border-primary" style="width: 100%; border-top-width: 1px; border-top-style: solid;"></span>
+                                    </div>
+                                    <div class="vx-row">
+                                        <div class="vx-col w-full mt-5">
+                                            <label class="vs-input--label">Tipo de apoyo que recibe</label>
+                                            <v-select :reduce="label => label.key" multiple :closeOnSelect="false" :options="helpTypeOptions" v-model="helpType" class="w-full select-large" name="help_type" v-validate="'required'" />
+                                            <small class="text-danger">{{ errors.first('step-2.help_type') }}</small>
+                                        </div>
+                                        <div class="vx-col w-full mt-5">
+                                            <label class="vs-input--label">Cuentanós con más detalle cómo te podemos apoyar</label>
+                                            <vs-textarea label="Cuentanos como te podemos ayudar" v-model="helpDescription" name="help_description" style="margin-bottom: 0px;" v-validate="'required'" />
+                                            <small class="text-danger">{{ errors.first('step-2.help_description') }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </transition>
+                        </form>
+                    </tab-content>
+
+                    <!-- tab 3 content -->
+                    <tab-content title="Dirección" class="mb-5" icon="feather icon-map" :before-change="validateStep3">
+                        <form data-vv-scope="step-3">
+                            <div class="vx-row">
+                                <div class="vx-col w-full mt-5">
+                                    <label class="vs-input--label">Región</label>
+                                    <v-select :reduce="label => label.key" :options="regionesOptions" v-model="eventDirectionRegion" class="w-full select-large" name="event_region" v-validate="'required'" ></v-select>
+                                    <small class="text-danger">{{ errors.first('step-3.event_region') }}</small>
+                                </div>
+                                <div class="vx-col w-full mt-5">
                                     <label class="vs-input--label">Comuna</label>
                                     <v-select :reduce="label => label.key" :options="updateAddressCommune" v-model="eventDirectionCommune" class="w-full select-large" name="event_commune" v-validate="'required'" ></v-select>
-                                    <small class="text-danger">{{ errors.first('step-2.event_commune') }}</small>
+                                    <small class="text-danger">{{ errors.first('step-3.event_commune') }}</small>
                                 </div>
                                 <div class="vx-col md:w-1/2 w-full mt-5">
                                     <label class="vs-input--label">Calle</label>
@@ -116,13 +176,12 @@
                                       :min-length="3"
                                       :loading="true">
                                     </vue-simple-suggest>
-                                    <small class="text-danger">{{ errors.first('step-2.event_street') }}</small>
+                                    <small class="text-danger">{{ errors.first('step-3.event_street') }}</small>
                                 </div>
                                 <div class="vx-col md:w-1/2 w-full mt-5">
-                                    <vs-input type="number" label="Número"  v-model="eventDirectionNumber" class="w-full" name="event_number" v-validate="'required|numeric'" />
-                                    <small class="text-danger">{{ errors.first('step-2.event_number') }}</small>
+                                    <vs-input type="number" label="Número"  v-model="eventDirectionNumber" class="w-full" name="event_number" v-validate="'numeric'" />
                                 </div>
-                                <div class="vx-col md:w-1/2 w-full mt-5">
+                                <div class="vx-col w-full mt-5">
                                     <label class="vs-input--label">Detalle</label>
                                     <vs-textarea label="Anota aquí otras indicaciones o referencias, sobre todo si el lugar es difícil de encontrar" v-model="eventDirectionDetail" />
                                 </div>
@@ -130,15 +189,16 @@
                         </form>
                     </tab-content>
 
-                    <!-- tab 3 content -->
-                    <tab-content title="Contacto" class="mb-5" icon="feather icon-mail" :before-change="validateStep3">
-                        <form data-vv-scope="step-3">
+                    <!-- tab 4 content -->
+                    <tab-content title="Contacto" class="mb-5" icon="feather icon-mail" :before-change="validateStep4">
+                        <form data-vv-scope="step-4">
                             <div class="vx-row">
                                 <div class="vx-col md:w-1/2 w-full mt-5">
                                     <vs-input icon-pack="feather" icon="icon-smartphone" label="Teléfono de la actividad u organización" v-model="contactPhone" class="w-full" />
                                 </div>
                                 <div class="vx-col md:w-1/2 w-full mt-5">
-                                    <vs-input icon-pack="feather" icon="icon-mail" label="Email" v-model="contactEmail" class="w-full" />
+                                    <vs-input icon-pack="feather" icon="icon-mail" label="Email" v-model="contactEmail" name="contact_email" class="w-full" v-validate="'email'"/>
+                                    <small class="text-danger">{{ errors.first('step-4.contact_email') }}</small>
                                 </div>
                                 <div class="vx-col md:w-1/2 w-full mt-5">
                                     <vs-input @focus="contactWebDetail = true" @blur="contactWebDetail = false" icon-pack="feather" icon="icon-chrome" label="Sitio web" v-model="contactWeb" class="w-full" />
@@ -159,64 +219,38 @@
                             </div>
                         </form>
                     </tab-content>
-
-                    <!-- tab 4 content -->
-                    <tab-content title="Ayuda o servicio" class="mb-5" icon="feather icon-info" :before-change="validateStep4">
-                        <form data-vv-scope="step-4">
-                            <div class="vx-row">
-                                <div class="vx-col md:w-1/2 w-full mt-5">
-                                    <label class="vs-input--label">Tipo de ayuda o servicio</label>
-                                    <v-select :reduce="label => label.key" multiple :closeOnSelect="false" :options="supportTypeOptions" v-model="supportType" class="w-full select-large" name="support_type" v-validate="'required'"/>
-                                    <small class="text-danger">{{ errors.first('step-4.support_type') }}</small>
-                                </div>
-                                <div class="vx-col md:w-1/2 w-full mt-5">
-                                    <label class="vs-input--label">Beneficiarios</label>
-                                    <v-select :reduce="label => label.key" multiple :closeOnSelect="false" :options="supportBeneficiariesOptions" v-model="supportBeneficiaries" class="w-full select-large" name="support_beneficiaries" v-validate="'required'"/>
-                                    <small class="text-danger">{{ errors.first('step-4.support_beneficiaries') }}</small>
-                                </div>
-                                <div class="vx-col md:w-1/2 w-full mt-5">
-                                <vs-input @focus="supportBeneficiariesNumberDetail = true" @blur="supportBeneficiariesNumberDetail = false" type="number" label="Nº de beneficiarios"  v-model="supportBeneficiariesNumber" class="w-full" />
-                                <small v-if="supportBeneficiariesNumberDetail" class="text-primary">¿Aproximadamente a cuántas personas ayuda? (por ejemplo ¿cuántas raciones diarias entrega la olla común o comedor solidario?)</small>
-                                </div>
-                                <div class="vx-col md:w-1/2 w-full md:mt-8">
-                                    <div class="demo-alignment">
-                                        <span>¿Necesita o recibe donaciones o voluntariado?</span>
-                                        <div class="flex">
-                                        <vs-checkbox v-model="showNeedHelp"></vs-checkbox>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="vx-col md:w-1/2 w-full mt-5">
-                                    <label class="vs-input--label">Descripción de ayuda o servicio que realiza</label>
-                                    <vs-textarea label="Hablanos un poco del más del servicio" v-model="supportDescription" />
-                                </div>
-                            </div>
-                            <transition name="fade">
-                                <div v-if="showNeedHelp">
-                                    <div class="vs-component vs-divider mt-10">
-                                        <span class="vs-divider-border after vs-divider-border-primary" style="width: 100%; border-top-width: 1px; border-top-style: solid;"></span>
-                                        <span class="vs-divider--text vs-divider-text-primary vs-divider-background-default" style="background: transparent;">
-                                            <i class="vs-icon notranslate icon-scale icon-divider notranslate vs-divider--icon feather icon-home null"></i>
-                                        </span>
-                                        <span class="vs-divider-border before vs-divider-border-primary" style="width: 100%; border-top-width: 1px; border-top-style: solid;"></span>
-                                    </div>
-                                    <div class="vx-row">
-                                        <div class="vx-col md:w-1/2 w-full mt-5">
-                                            <label class="vs-input--label">Tipo de ayuda que recibe</label>
-                                            <v-select :reduce="label => label.key" multiple :closeOnSelect="false" :options="helpTypeOptions" v-model="helpType" class="w-full select-large" name="help_type" v-validate="'required'" />
-                                            <small class="text-danger">{{ errors.first('step-4.help_type') }}</small>
-                                        </div>
-                                        <div class="vx-col md:w-1/2 w-full mt-5">
-                                            <label class="vs-input--label">Descripción de donaciones o voluntariado que recibe</label>
-                                            <vs-textarea label="Cuentanos como te podemos ayudar" v-model="helpDescription" name="help_description" style="margin-bottom: 0px;" v-validate="'required'" />
-                                            <small class="text-danger">{{ errors.first('step-4.help_description') }}</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </transition>
-                        </form>
-                    </tab-content>
                 </form-wizard>
+
+              <vs-popup classContent="warning" title="Gracias por tu tiempo" :active.sync="popUpInformation">
+                <p>Es muy importante que revises la información antes de ingresarla, debemos estar seguros de que nuestra información sea real.</p>
+                <div class="vx-row"> 
+                  <div class="vx-col w-full mt-5 mb-20">
+                    <label class="vs-input--label">¿Dónde obtuviste la información?</label>
+                    <v-select @input="createEvent" :reduce="label => label.key" :options="informationOptions" v-model="information" class="w-full select-large" name="information_detail" v-validate="'required'"/>
+                 </div>
+                </div>
+                <small class="warning">Toda la información debe ser verificada antes de su uso público.</small>
+              </vs-popup>
+
+              <vs-popup classContent="warning" title="Muchas gracias por tu ayuda" :active.sync="popUpOrganizationEvent">
+                <p>Para poder entregar una información completa podrías completar la siguiente pregunta.</p>
+                <div class="vx-row"> 
+                  <div class="vx-col w-full mt-5">
+                    <label class="vs-input--label">¿Conoces a la organización que creo esta iniciativa?</label>
+                      <vue-simple-suggest class="w-full select-large" name="event_street" v-validate="'required'"
+                        v-model="organizationName"
+                        :list="organizationNameOptions"
+                        :filter-by-query="true"
+                        :min-length="3"
+                        :loading="true">
+                      </vue-simple-suggest>
+                  </div>
+                  <div class="vx-col w-full mt-5">
+                    <vs-button class="w-full" @click="linkEventOrganization" color="primary" type="filled">Ingresar</vs-button>
+                  </div>
+                </div>
+              </vs-popup>
+
             </div>
         </vx-card>
     </div>
@@ -239,7 +273,7 @@ import { Validator } from 'vee-validate'
 const dict = {
   custom: {
     event_name: { required: 'Necesitamos el nombre de la actividad' },
-    event_type: { required: 'Necesitamos el nombre de la actividad' },
+    event_type: { required: 'Necesitamos el tipo de actividad' },
     event_region: { required: 'Necesitamos la región' },
     event_commune: { required: 'Necesitamos la comuna' },
     event_street: { required: 'Necesitamos el nombre calle' },
@@ -260,50 +294,6 @@ const dict = {
 
 // register custom messages
 Validator.localize('en', dict)
-
-function cleanStar () {
-  return {
-    // Step 1
-
-    eventName: '',
-    eventType: 0,
-    dateStart: new Date(),
-    dateEnd: new Date(),
-    configdateTimePicker: {
-      enableTime: true,
-      dateFormat: 'd-m-Y H:i'
-    },
-    eventHour: [],
-    daysEvent: [],
-
-    // Step 2
-
-    eventDirectionRegion: '',
-    eventDirectionCommune: '',
-    eventDirectionStreet: '',
-    eventDirectionNumber: '',
-    eventDirectionDetail: '',
-
-    // Step 3
-
-    contactPhone: '',
-    contactEmail: '',
-    contactWeb: '',
-    contactFacebook: '',
-    contactInstagram: '',
-    contactTwitter: '',
-    
-    // Step 4
-
-    supportType: '',
-    supportBeneficiaries: '',
-    supportBeneficiariesNumber: '',
-    supportDescription: '',
-    showNeedHelp: false,
-    helpType: '',
-    helpDescription: ''  
-  }
-}
 
 // register custom messages
 Validator.localize('en', dict)
@@ -334,7 +324,7 @@ export default {
         { key: '6', label: 'Domingo' }
       ],
 
-      // Step 4
+      // Step 2
 
       supportBeneficiariesOptions: [],
       supportTypeOptions: [],
@@ -345,7 +335,7 @@ export default {
       // Step 1
 
       eventName: '',
-      eventType: 0,
+      eventType: '',
       dateStart: new Date(),
       dateEnd: new Date(),
       configdateTimePicker: {
@@ -357,13 +347,25 @@ export default {
 
       // Step 2
 
+      supportType: '',
+      supportBeneficiaries: '',
+      supportBeneficiariesNumber: '',
+      supportBeneficiariesNumberDetail: '',
+      supportDescription: '',
+      showNeedHelp: false,
+      helpType: '',
+      helpTypeOptions: '',
+      helpDescription: '',  
+
+      // Step 3
+
       eventDirectionRegion: '',
       eventDirectionCommune: '',
       eventDirectionStreet: '',
       eventDirectionNumber: '',
       eventDirectionDetail: '',
 
-      // Step 3
+      // Step 4
 
       contactPhone: '',
       contactEmail: '',
@@ -375,22 +377,25 @@ export default {
       contactInstagramDetail: '',
       contactTwitter: '',
       contactTwitterDetail: '',
-      
-      // Step 4
 
-      supportType: '',
-      supportBeneficiaries: '',
-      supportBeneficiariesNumber: '',
-      supportBeneficiariesNumberDetail: '',
-      supportDescription: '',
-      showNeedHelp: false,
-      helpType: '',
-      helpTypeOptions: '',
-      helpDescription: ''  
+      // POP UP
+
+      popUpInformation: false,
+      informationOptions: [],
+      information: '',
+      popUpOrganizationEvent: false,
+      organizationNameOptions: [],
+      organizationName: '',
+      eventNameHidden: ''
 
     }
   },
   mounted () {
+    this.$http
+      .get('json/data/organizationNames')
+      .then(response => (this.organizationNameOptions = response.data))
+      .catch(error => console.log(error))
+
     this.$http
       .get('region')
       .then(response => (this.regionesOptions = response.data))
@@ -414,6 +419,11 @@ export default {
     this.$http
       .get('forms/data/getSupport')
       .then(response => (this.supportTypeOptions = response.data))
+      .catch(error => console.log(error)) 
+
+    this.$http
+      .get('forms/data/getInformation')
+      .then(response => (this.informationOptions = response.data))
       .catch(error => console.log(error)) 
 
     this.$http
@@ -459,35 +469,89 @@ export default {
       return new Promise((resolve, reject) => {
         this.$validator.validateAll('step-4').then(result => {
           if (result) {
-            this.createEvent()
-            resolve(true)
+            if(this.contactPhone == '' && this.contactEmail == '' && this.contactWeb == '' && this.contactFacebook == '' && this.contactInstagram == '' && this.contactTwitter == '') {
+              reject('Ingrese un dato de conectacto')
+            } else {
+              this.popUpInformation = true
+              resolve(true)
+            }
           } else {
             reject('correct all values')
           }
         })
       })
     },
-    openAlert (color) {
-      this.colorAlert = color
+    // REDIRECT
+    redirect (url) {
+       this.$router.push(url)
+    }, 
+    redirectHome () {
+       this.$router.push('/')
+    }, 
+    redirectOrganization () {
+       this.$router.push('new-organization')
+	  }, 
+    // Alerta de color
+    openAlert () {
+      this.popUpOrganizationEvent = false
       this.$vs.dialog({
-        color: this.colorAlert,
-        title: `Dialog - ${this.colorAlert}`,
-        text: 'I love soufflé lollipop liquorice wafer jelly-o halvah sesame snaps. Pastry chocolate cake jelly-o carrot cake jelly topping croissant ice cream.',
-        accept: this.successAlert
+        color: 'warning',
+        title: 'No hemos podido encontrar a la organización en nuestra base',
+        text: '¿Te interesaría ingresar esta nueva organización a nuestro sistema?',
+        accept: this.redirect('/')
+      })
+    },
+    createDialog (data) {
+      this.$vs.dialog({
+      type:'confirm',
+      color: data.color,
+      title: data.title,
+      text: data.text,
+      accept: this.redirectOrganization, // Al pasar parametros se lanza inmediatamente
+      cancel: this.redirectHome
+      })
+    },
+    createNotify (data) {
+      this.$vs.notify({
+      position: 'top-center',
+      color: data.color,
+      title: data.title,
+      text: data.text
       })
     },
     successAlert () {
       this.$vs.notify({
+        position: 'top-center',
         color: 'success',
-        title: 'Accept Selected',
-        text: 'Gingerbread soufflé biscuit oat cake.'
+        title: 'Gracias por tu tiempo',
+        text: 'Tu actividad ha sido ingresada con éxito.'
       })
+      this.popUpOrganizationEvent = true;
     },
     dangerAlert () {
       this.$vs.notify({
+        position: 'top-center',
         color: 'danger',
-        title: 'Danger Selected',
-        text: 'Gingerbread soufflé biscuit oat cake.'
+        title: 'Ocurrio un problema',
+        text: 'UPS! No hemos podido ingresar tu actividad'
+      })
+    },
+    // INGRESOS
+    linkEventOrganization() {
+      const url = 'event/linkEventOrganization'
+      this.$http.post(url, {
+        organizationName: this.organizationName,
+        eventName: this.eventNameHidden
+      }).then(response => {
+        console.log(response)
+        this.popUpOrganizationEvent = false;
+        if(response.data.type == 'notify')
+          this.createNotify(response.data)
+        else if (response.data.type == 'dialog') 
+          this.createDialog(response.data)
+      }).catch(error => {
+        
+        console.log(error.response)
       })
     },
     createEvent () {
@@ -517,10 +581,10 @@ export default {
         helpType: this.helpType,
         helpDescription: this.helpDescription
       }).then(response => {
+        this.popUpInformation = false;
         this.successAlert()
         console.log(response)
-        this.$refs.wizard.reset()
-        Object.assign(this.$data, cleanStar())
+        this.eventNameHidden = this.eventName
       }).catch(error => {
         this.dangerAlert()
         console.log(error.response)

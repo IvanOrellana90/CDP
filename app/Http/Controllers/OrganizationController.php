@@ -8,6 +8,7 @@ use App\Contact;
 use App\Organization;
 use App\Direction;
 use App\Area;
+use App\Observation;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
@@ -36,7 +37,6 @@ class OrganizationController extends Controller
     {
         $this->validate($request, [
             'nameOrganization' => 'required',
-            'categoryOrganization' => 'required',
             'operationOrganization' => 'required',
             'operationCountry' => 'required',
             'supportType' => 'required',
@@ -79,11 +79,15 @@ class OrganizationController extends Controller
             // Creando aréa de acción
 
             $area = new Area();
-
-            $area->detail = $request->operationDetail;
             $area->save();
 
-            if($request->operationOrganization == 12) {
+            // Definir como guardar el area de acción según la operación
+
+            if($request->operationOrganization == 12) { 
+
+                $area->detail = $request->operationDetail;
+                $area->save();
+
                 $direction = new Direction();
 
                 $direction->street = $request->operationOrganizationStreet;
@@ -98,7 +102,7 @@ class OrganizationController extends Controller
             } elseif ($request->operationOrganization == 11) {
                 $area->communes()->sync($request->operationCommune);
                 $area->communes()->sync($request->operationRegion);
-            } else {
+            } elseif ($request->operationOrganization == 10) {
                 $area->regions()->sync($request->operationRegion);
             } 
 
@@ -115,16 +119,20 @@ class OrganizationController extends Controller
 
             $contact->save();
 
+            // Creando OBSERVACIONES
+
+            $observation = new Observation();
+            $observation->save();
+
             // Creando Organización
 
             $organization = new Organization();
 
             $organization->name = $request->nameOrganization;
-            $organization->category_id = $request->categoryOrganization;
             $organization->operation_id = $request->operationOrganization;
-            $organization->rut = $request->rutOrganization;
             $organization->support_id = $support->id;
             $organization->contact_id = $contact->id;
+            $organization->observation_id = $observation->id;
             $organization->area_id = $area->id;
 
             $organization->save();
@@ -139,6 +147,7 @@ class OrganizationController extends Controller
                 $directionOrganization->commune_id = $request->addressCommuneOrganization;
                 $directionOrganization->street = $request->addressStreetOrganization;
                 $directionOrganization->number = $request->addressNumberOrganization;
+                $directionOrganization->detail = $request->addressDetailOrganization;
                 $directionOrganization->save();
 
                 $organization->directions()->attach($directionOrganization->id);

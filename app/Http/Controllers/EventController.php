@@ -12,6 +12,7 @@ use App\Contact;
 use App\Event;
 use App\Direction;
 use App\Date;
+use App\Organization;
 
 class EventController extends Controller
 {
@@ -41,7 +42,6 @@ class EventController extends Controller
             'eventDirectionRegion' => 'required',
             'eventDirectionCommune' => 'required',
             'eventDirectionStreet' => 'required',
-            'eventDirectionNumber' => 'required',
             'supportType' => 'required',
             'supportBeneficiaries' =>'required'
         ]);
@@ -114,47 +114,48 @@ class EventController extends Controller
             $event->support_id = $support->id;
             $event->contact_id = $contact->id;
 
-            $event->save();
-
             if($request->eventType == 1) {
                 // Recurrente
 
-                foreach ($request->eventHour as $key => $hours) {
+                $event->type = "1";
+                $event->save();
+
+                $i = 0; // Cantidad de semanas (dias) que se repite el evento
+
+                while ($i < 21) {
+                    foreach ($request->eventHour as $key => $hours) {
                     
-                    $date = Carbon::now();
-                    $date = $date->startOfWeek();
+                        $date = Carbon::now();
+                        $date = $date->startOfWeek();
 
-                    // Dia lunes de esta semana más los días del formulario
-                    $date = $date->addDay($key)->format('Y-m-d');
+                        // Dia lunes de esta semana más los días del formulario
+                        $date = $date->addDay($key + $i)->format('Y-m-d');
 
-                    foreach ($hours as $value) {
+                        foreach ($hours as $value) {
 
-                        $start = Carbon::createFromFormat('Y-m-d H:i', $date .' '.$value, 'America/Santiago');
+                            $start = Carbon::createFromFormat('Y-m-d H:i', $date .' '.$value, 'America/Santiago');
 
-                        $date = new Date();
+                            $date = new Date();
 
-                        $date->event_id = $event->id;
-                        $date->start = $start->format('Y-m-d H:i:s');
+                            $date->event_id = $event->id;
+                            $date->start = $start->format('Y-m-d H:i:s');
 
-                        $date->save();
+                            $date->save();
+                        }
                     }
+                    // Sumamos 7 para pasar a la siguiente semana
+                    $i = $i + 7;
                 }
 
             } else {
                 // Una sola vez
 
-                $event = new Event();
-
-                $event->name = $request->eventName;
-                $event->direction_id = $direction->id;
-                $event->support_id = $support->id;
-                $event->contact_id = $contact->id;
-
+                $event->type = "2";
                 $event->save();
 
                 $date = new Date();
 
-                $date->event->id = $event->id;
+                $date->event_id = $event->id;
                 $date->start = Carbon::parse($request->dateStart)->setTimezone( 'America/Santiago' )->format('Y-m-d H:i:s');
                 $date->end = Carbon::parse($request->dateEnd)->setTimezone( 'America/Santiago' )->format('Y-m-d H:i:s');
 
@@ -173,6 +174,48 @@ class EventController extends Controller
         DB::commit();
 
         return;
+    }
+
+    public function linkEventOrganization(Request $request) {
+        
+        $this->validate($request, [
+            'eventName' => 'required',
+            'organizationName' => 'required'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+
+            $event = Event::where('name', $request->eventName)->latest('created_at')->first();
+            $organization = Organization::where('name', $request->organizationName)->latest('created_at')->first();
+            
+            if($organization == null) {
+                return ['title' => 'No tenemos registros de esta organización', 
+                        'text' => '¿Te gustaría ingresar esta nueva organización a nuestro sitio?',
+                        'color' => 'warning', 
+                        'url' => 'new-organization',
+                        'type' => 'dialog'];
+            }
+
+            $event->organizations()->sync($organization->id);
+
+        } catch (Exception $ex){
+            
+            Log::error("Error in store(new-event-organization): ".$ex->getMessage());
+
+            DB::rollBack();
+
+            return;
+        }
+
+        DB::commit();
+        
+        return ['title' => 'Gracias por completar tu información', 
+                'text' => 'En cuanto verifiquemos tu información la podrás ver en el sitio.',
+                'color' => 'success', 
+                'url' => '/',
+                'type' => 'notify'];
     }
 
     /**

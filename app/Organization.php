@@ -18,6 +18,11 @@ class Organization extends Model
         return $this->belongsToMany('App\Direction');
     }
 
+    public function events()
+    {
+        return $this->belongsToMany('App\Event');
+    }
+
     public function contact()
     {
         return $this->belongsTo('App\Contact');
