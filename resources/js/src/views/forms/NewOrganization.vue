@@ -541,7 +541,7 @@ export default {
       }).then(response => {
         this.confirmation = false
         this.successAlert()
-        this.redirectHome()
+        
         console.log(response)
       }).catch(error => {
         this.dangerAlert()
