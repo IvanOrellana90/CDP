@@ -48,7 +48,7 @@ const router = new Router({
         {
           path: '/new-organization',
           name: 'new-organization',
-          component: () => import('@/views/forms/NewOrganization.vue'),
+          component: () => require('@/views/forms/NewOrganization.vue').default,
           meta: {
             breadcrumb: [
               { title: 'Inicio', url: '/' },
