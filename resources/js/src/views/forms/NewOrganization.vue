@@ -492,11 +492,12 @@ export default {
        this.$router.push('/')
 	  }, 
     successAlert () {
-      this.$vs.notify({
+      this.$vs.dialog({
         position: 'top-center',
         color: 'success',
         title: 'Gracias por tu tiempo',
-        text: 'Tu organización ha sido ingresada con éxito.'
+        text: 'Tu organización ha sido ingresada con éxito.',
+        accept: this.redirectHome
       })
     },
     dangerAlert () {
@@ -541,7 +542,6 @@ export default {
       }).then(response => {
         this.confirmation = false
         this.successAlert()
-        
         console.log(response)
       }).catch(error => {
         this.dangerAlert()
