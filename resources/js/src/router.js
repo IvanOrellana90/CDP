@@ -48,7 +48,7 @@ const router = new Router({
         {
           path: '/new-organization',
           name: 'new-organization',
-          component: () => require('@/views/forms/NewOrganization.vue').default,
+          component: () => import('./views/forms/NewOrganization.vue'),
           meta: {
             breadcrumb: [
               { title: 'Inicio', url: '/' },
@@ -61,7 +61,7 @@ const router = new Router({
         {
           path: '/new-event',
           name: 'new-event',
-          component: () => import('@/views/forms/NewEvent.vue'),
+          component: () => import('./views/forms/NewEvent.vue'),
           meta: {
             breadcrumb: [
               { title: 'Inicio', url: '/' },
