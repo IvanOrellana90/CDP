@@ -488,8 +488,8 @@ export default {
         })
       })
     },
-    redirect (url) {
-       this.$router.push(url)
+    redirectHome () {
+       this.$router.push('/')
 	  }, 
     successAlert () {
       this.$vs.notify({
@@ -539,10 +539,10 @@ export default {
         helpType: this.helpType,
         helpDescription: this.helpDescription
       }).then(response => {
-        this.confirmation = false;
+        this.confirmation = false
         this.successAlert()
+        this.redirectHome()
         console.log(response)
-        this.redirect('/')
       }).catch(error => {
         this.dangerAlert()
         console.log(error.response)
