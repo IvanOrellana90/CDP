@@ -13,7 +13,7 @@ class Direction extends Model
 
     public function region()
     {
-        return $this->hasOne('App\Region');
+        return $this->belongsTo('App\Region');
     }
 
     public function commune()

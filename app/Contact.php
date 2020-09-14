@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Contact extends Model
 {
-    protected $fillable = ['phone','email'];
+    public function event () {
+        return $this->hasOne('App\Event');
+    }
 
-    public function urls () {
-        return $this->hasMany('App\Url');
+    public function organization () {
+        return $this->hasOne('App\Organization');
     }
 
 }

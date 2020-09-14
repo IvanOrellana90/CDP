@@ -10,7 +10,7 @@
 <template>
   <div id="data-list-list-view" class="data-list-container">
 
-    <vx-card ref="filterCard" class="user-list-filters mb-8" actionButtons @refresh="resetColFilters" @remove="resetColFilters">
+    <vx-card ref="filterCard" class="user-list-filters mb-8">
       <div class="vx-row">
         <div class="vx-col md:w-1/4 sm:w-1/2 w-full">
           <label class="text-sm opacity-75">Tipo de ayuda</label>
@@ -34,11 +34,9 @@
     <vs-table ref="table" v-model="selected" pagination :max-items="itemsPerPage" search :data="events">
 
       <template slot="thead">
-        <vs-th sort-key="name">Nombre</vs-th>
-        <vs-th sort-key="support.categories">Ayuda</vs-th>
-        <vs-th sort-key="popularity">Operación</vs-th>
-        <vs-th sort-key="inititive">Iniciativa</vs-th>
-        <vs-th sort-key="verified">Estado</vs-th>
+        <vs-th sort-key="name">Nombre de la Organización</vs-th>
+        <vs-th sort-key="support.categories">Tipo de Ayuda</vs-th>
+        <vs-th sort-key="description">Descripción</vs-th>
       </template>
 
         <template slot-scope="{data}">
@@ -58,79 +56,252 @@
               </vs-td>
 
               <vs-td>
-                <vs-list-item v-if="tr.initiative == '1'" title="Comuna" :subtitle="tr.direction.commune.name" />
-                <vs-list-item v-else :title="tr.operation.name" :subtitle="tr.operation.description" />
+                <p class="product-category">{{ tr.support.description }}</p>
               </vs-td>
 
-              <vs-td>
-                <p class="product-category" v-if="tr.initiative == '0'" >Organización</p>
-                <p class="product-category" v-else >Actividad</p>
-              </vs-td>
+              <!-- Descripción de EVENTO -->
 
-              <vs-td>
-                <vs-list-item v-if="tr.verified == 0" class="text-warning" icon="new_releases" subtitle="Incompleto" />
-                <vs-list-item v-else class="text-success" icon="verified_user" subtitle="Verificado" />
-              </vs-td>
+              <template v-if="tr.initiative == 1" class="expand-user" slot="expand">
 
-              <!--
-
-              <template class="expand-user" slot="expand">
                 <div class="con-expand-users w-full">
                   <div class="con-btns-user flex items-center justify-between">
-                    <div class="con-userx flex items-center justify-start">
-                      <span>{{ tr.name }}</span>
-                    </div>
-                    <div class="flex">
-                      <vs-button type="border" size="small" icon-pack="feather" icon="icon-phone" class="mr-2"></vs-button>
-                      <vs-button type="border" size="small" icon-pack="feather" icon="icon-send" color="success" class="mr-2"></vs-button>
-                      <vs-button type="border" size="small" icon-pack="feather" icon="icon-trash" color="danger"></vs-button>
-                    </div>
+                      <div class="con-userx flex items-center justify-start">
+                          <h4>{{ tr.name }}</h4>
+                      </div>
+                      <div class="flex">
+                          <a v-if="tr.contact.web" :href="'http://' + tr.contact.web" class="mr-2">
+                            <vs-button type="border" size="small" icon-pack="feather" icon="icon-chrome"></vs-button>
+                          </a>
+                          <a v-if="tr.contact.facebook" :href="'http://facebook.com/'+tr.contact.facebook" class="mr-2">
+                            <vs-button type="border" size="small" icon-pack="feather" icon="icon-facebook"></vs-button>
+                          </a>
+                          <a v-if="tr.contact.instagram" :href="'http://instagram.com/'+tr.contact.instagram" class="mr-2">
+                            <vs-button type="border" size="small" icon-pack="feather" icon="icon-instagram"></vs-button>
+                          </a>    
+                          <a v-if="tr.contact.twitter" :href="'http://twitter.com/'+tr.contact.twitter">
+                            <vs-button type="border" size="small" icon-pack="feather" icon="icon-twitter"></vs-button>
+                          </a>
+                      </div>
                   </div>
-                  <vs-list>
-                    <vs-list-item icon-pack="feather" icon="icon-mail" :title="tr.email"></vs-list-item>
-                    <vs-list-item icon-pack="feather" icon="icon-globe" :title="tr.website"></vs-list-item>
-                  </vs-list>
+
+                  <!-- Descripción -->
+                  <div v-if="tr.support.description" class="user-bio mt-5">
+                      <h6>Descripción:</h6>
+                      <p>{{ tr.support.description }}</p>
+                      <vs-divider color="primary" />
+                  </div>
+                  
+                  <!-- Beneficiarios -->
+                  <div class="user-bio mt-5">
+                      <h6>Beneficiarios:</h6>
+                      <p :data="value" :key="index" v-for="(value, index) in tr.support.beneficiaries" >{{ value.name  }}</p>
+                      <vs-divider color="primary" />
+                  </div>
+
+                  <!-- Direccion -->
+                  <div v-if="tr.direction.number" class="mt-5">
+                      <h6>Dirección:</h6>
+                      <p>{{ tr.direction.street + ' ' + tr.direction.number + ', ' + tr.direction.commune.name + ', ' + tr.direction.region.name}}</p>
+                  </div>
+                  <div v-else-if="tr.direction.street" class="mt-5">
+                      <h6>Dirección:</h6>
+                      <p>{{ tr.direction.street + ', ' + tr.direction.commune.name + ', ' + tr.direction.region.name}}</p>
+                  </div>
+                  <div v-else class="mt-5">
+                      <h6>Dirección:</h6>
+                      <p>{{ tr.direction.commune.name + ', ' + tr.direction.region.name}}</p>
+                  </div>
+                  <div v-if="tr.direction.district" class="mt-3">
+                      <h6>Distrito:</h6>
+                      <p>{{ tr.direction.district }}</p>
+                  </div>
+                  <div v-if="tr.direction.detail" class="mt-3">
+                      <h6>Detalle</h6>
+                      <p>{{ tr.direction.detail }}</p>
+                  </div>
+                  <vs-divider color="primary" />
+
+                  <!-- Calendario 
+                  <div id="simple-calendar-app">
+                    <div class="no-scroll-content">
+                      <calendar-view
+                        ref="calendar"
+                        displayPeriodUom="week"
+                        :show-date="showDate"
+                        :eventTop="windowWidth <= 400 ? '2rem' : '3rem'"
+                        eventBorderHeight="0px"
+                        eventContentHeight="1.65rem"
+                        class="theme-default"/>
+                    </div>
+                  </div> -->
+                  
+                  <!-- Contacto -->
+                  <div v-if="tr.contact.email" class="mt-5">
+                      <h6>Correo:</h6>
+                      <p>{{ tr.contact.email }}</p>
+                  </div>
+                  <div v-if="tr.contact.web" class="mt-3">
+                      <h6>Sitio web:</h6>
+                      <p>{{ tr.contact.web }}</p>
+                  </div>
+                  <div v-if="tr.contact.phone" class="mt-3">
+                      <h6>Teléfono:</h6>
+                      <p>{{ tr.contact.phone }}</p>
+                  </div>
+                  <div v-if="tr.contact.twitter" class="mt-3">
+                      <h6>Twitter:</h6>
+                      <p>{{ tr.contact.twitter }}</p>
+                  </div>
+                  <div v-if="tr.contact.instagram" class="mt-3">
+                      <h6>Instagram:</h6>
+                      <p>{{ tr.contact.instagram }}</p>
+                  </div>
+                  <div v-if="tr.contact.facebook" class="mt-3">
+                      <h6>Facebook:</h6>
+                      <p>{{ tr.contact.facebook }}</p>
+                  </div>
                 </div>
+
               </template>
 
-              -->
+              <!-- Descripción de ORGANIZACION -->
+
+              <template v-if="tr.initiative == 0" class="expand-user" slot="expand">
+
+                <div class="con-expand-users w-full">
+                  <div class="con-btns-user flex items-center justify-between">
+                      <div class="con-userx flex items-center justify-start">
+                          <h5>{{ tr.name }}</h5>
+                      </div>
+                      <div class="flex">
+                          <a v-if="tr.contact.facebook" :href="'http://facebook.com/'+tr.contact.facebook" class="mr-2">
+                            <vs-button type="border" size="small" icon-pack="feather" icon="icon-facebook"></vs-button>
+                          </a>
+                          <a v-if="tr.contact.instagram" :href="'http://istagram.com/'+tr.contact.instagram" class="mr-2">
+                            <vs-button type="border" size="small" icon-pack="feather" icon="icon-instagram"></vs-button>
+                          </a>    
+                          <a v-if="tr.contact.twitter" :href="'http://twitter.com/'+tr.contact.twitter">
+                            <vs-button type="border" size="small" icon-pack="feather" icon="icon-twitter"></vs-button>
+                          </a>
+                      </div>
+                  </div>
+
+                  <!-- Descripción -->
+                    <div v-if="tr.support.description" class="user-bio mt-5">
+                        <h6>Descripción:</h6>
+                        <p>{{ tr.support.description }}</p>
+                    </div>
+
+                  <!-- Beneficiarios -->
+                    <div class="user-bio mt-5">
+                        <h6>Beneficiarios:</h6>
+                        <p :data="value" :key="index" v-for="(value, index) in tr.support.beneficiaries" >{{ value.name  }}</p>
+                        <vs-divider color="primary" />
+                    </div>
+
+                  <!-- Area de accion -->
+                    <div v-if="tr.operation.id == 9" class="mt-5">
+                        <h6>Área de acción: <strong>Nacional</strong></h6>
+                    </div>
+                    <div v-if="tr.operation.id == 10" class="mt-5">
+                        <h6>Área de acción: <strong>Regional</strong></h6>
+                        <p :data="value" :key="index" v-for="(value, index) in tr.area.regions" >{{ value.name  }}</p>
+                    </div>
+                    <div v-if="tr.operation.id ==11" class="mt-5">
+                        <h6>Área de acción: <strong>Comunal</strong></h6>
+                        <p :data="value" :key="index" v-for="(value, index) in tr.area.communes" >{{ value.name  }}</p>
+                    </div>
+                    <div v-if="tr.area.detail" class="mt-3">
+                        <h6>Detalle</h6>
+                        <p>{{ tr.area.detail }}</p>
+                    </div>
+                    <vs-divider color="primary" />
+
+                    <!-- Contacto -->
+                    <div v-if="tr.contact.email" class="mt-5">
+                        <h6>Correo:</h6>
+                        <p>{{ tr.contact.email }}</p>
+                    </div>
+                    <div v-if="tr.contact.web" class="mt-5">
+                        <h6>Sitio web:</h6>
+                        <p>{{ tr.contact.web }}</p>
+                    </div>
+                    <div v-if="tr.contact.phone" class="mt-5">
+                        <h6>Teléfono:</h6>
+                        <p>{{ tr.contact.phone }}</p>
+                    </div>
+                    <div v-if="tr.contact.twitter" class="mt-5">
+                        <h6>Twitter:</h6>
+                        <p>{{ tr.contact.twitter }}</p>
+                    </div>
+                    <div v-if="tr.contact.instagram" class="mt-5">
+                        <h6>Instagram:</h6>
+                        <p>{{ tr.contact.instagram }}</p>
+                    </div>
+                    <div v-if="tr.contact.facebook" class="mt-5">
+                        <h6>Facebook:</h6>
+                        <p>{{ tr.contact.facebook }}</p>
+                    </div>
+                </div>
+
+              </template>
 
             </vs-tr>
           </tbody>
         </template>
     </vs-table>
   </div>
+  
 </template>
 
 <script>
 
 import vSelect from 'vue-select'
+import { CalendarView, CalendarViewHeader } from 'vue-simple-calendar'
 
 export default {
   data () {
     return {
       selected: [],
-      itemsPerPage: 4,
-      events: '',
+      itemsPerPage: 5,
+      events: [],
+      eventDataComplet: [],
       isMounted: false,
 
+      // Calendar
+
+      showDate: new Date(),
+      calendarView: 'week',
+
       // Filter Options
-      regionFilter: { label: 'All', value: 'all' },
+      regionFilter: { label: 'Regiones', value: '' },
       regionOptions: [],
-      communeFilter: { label: 'All', value: 'all' },
+      communeFilter: { label: 'Comunas', value: '' },
       communeOptions: [],
-      beneficiarieFilter: { label: 'All', value: 'all' },
+      beneficiarieFilter: { label: 'Beneficiarios', value: '' },
       beneficiarieOptions: [],
-      supportFilter: { label: 'All', value: 'all' },
+      supportFilter: { label: 'Ayuda', value: '' },
       supportOptions: []
     }
   },
   watch: {
-    roleFilter (obj) {
-      this.setColumnFilter('role', obj.value)
+    supportFilter (obj) {
+      this.setColumnFilter('support', obj)
+    },
+    regionFilter (obj) {
+      this.setColumnFilter('region', obj)
+    },
+    communeFilter (obj) {
+      this.setColumnFilter('commune', obj)
+    },
+    beneficiarieFilter (obj) {
+      this.setColumnFilter('beneficiary', obj)
     }
   },
   computed: {
+    windowWidth () {
+      return this.$store.state.windowWidth
+    },
     currentPage () {
       if (this.isMounted) {
         return this.$refs.table.currentx
@@ -161,17 +332,87 @@ export default {
     },
     resetColFilters () {
       // Reset Filter Options
-      this.supportFilter = this.regionFilter = this.communeFilter = this.beneficiarieFilter = { label: 'All', value: 'all' }
+      this.supportFilter = this.regionFilter = this.communeFilter = this.beneficiarieFilter = { label: 'All', value: '' }
 
       this.$refs.filterCard.removeRefreshAnimation()
+    },
+    async setColumnFilter (column, val) {
+
+      this.events = this.eventDataComplet
+
+      if(this.communeFilter.value != '') {
+
+        await this.$http
+        .get('json/data/initiatives', {
+          params: {
+              region: this.regionFilter,
+              commune: this.communeFilter,
+          }
+          }).then(response => (this.events = response.data))
+        .catch(error => console.log(error))
+
+      } else if(this.regionFilter.value != '') {
+
+        await this.$http
+        .get('json/data/initiatives', {
+          params: {
+              region: this.regionFilter,
+          }
+          }).then(response => (this.events = response.data))
+        .catch(error => console.log(error))
+        
+      }
+
+      if(this.beneficiarieFilter.value != '') {
+        this.setBeneficiarieFilter(this.beneficiarieFilter)
+      }
+
+      if(this.supportFilter.value != '') {
+        this.setSupportFilter(this.supportFilter)
+      }
+    },
+    setSupportFilter(obj) {
+      var results = []
+      this.events.forEach(event => {
+        event.support.categories.forEach(category => {
+          if(category.pivot.category_id === obj) {
+            results.push(event)
+          } 
+        })
+      })
+      this.events = results
+    },
+    setBeneficiarieFilter(obj) {
+      var results = []
+      this.events.forEach(event => {
+        event.support.beneficiaries.forEach(beneficiary => {
+          if(beneficiary.id === obj) {
+            results.push(event)
+          } 
+        })
+      })
+      console.log(results)
+      this.events = results
     }
   },
   mounted () {
     this.isMounted = true
 
     this.$http
+      .get('forms/data/getSupport')
+      .then(response => (this.supportOptions = response.data))
+      .catch(error => console.log(error)) 
+
+    this.$http
+      .get('forms/data/getBeneficiaries')
+      .then(response => (this.beneficiarieOptions = response.data))
+      .catch(error => console.log(error)) 
+
+    this.$http
       .get('json/data/initiatives')
-      .then(response => (this.events = response.data))
+      .then(response => {
+        this.events = response.data
+        this.eventDataComplet = response.data})
       .catch(error => console.log(error))
 
     this.$http
@@ -185,6 +426,7 @@ export default {
       .catch(error => console.log(error))
   },
   components: {
+    CalendarView,
     vSelect
   }
 }

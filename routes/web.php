@@ -24,8 +24,8 @@ Route::get('/forms/data/getInformation','CategoryController@getInformation');
 
 // JSON
 
-Route::get('/json/data/initiatives','JSONController@initiativesData');
-Route::get('/json/data/organizationNames','JSONController@organizationNames');
+Route::get('json/data/initiatives','JSONController@initiativesData');
+Route::get('json/data/organizationNames','JSONController@organizationNames');
 
 // Events
 

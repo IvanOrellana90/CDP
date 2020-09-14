@@ -33,10 +33,10 @@ export default {
   methods: {
     redirectOrganization () {
       this.$router.push("new-organization")
-	},
-	redirectEvent () {
-      this.$router.push("new-event")
-	},
+    },
+    redirectEvent () {
+        this.$router.push("new-event")
+    },
   }
 }
 </script>

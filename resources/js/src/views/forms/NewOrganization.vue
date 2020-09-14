@@ -497,7 +497,8 @@ export default {
         color: 'success',
         title: 'Gracias por tu tiempo',
         text: 'Tu organización ha sido ingresada con éxito.',
-        accept: this.redirectHome
+        accept: this.redirectHome,
+        close: this.redirectHome
       })
     },
     dangerAlert () {
